@@ -1,0 +1,6 @@
+{
+  "name": "HelpMeToCode",
+  "description": "Une application interactive pour concevoir des structures de sites web, choisir des thèmes visuels, prévisualiser le rendu et générer le prompt de création ultime face à Antigravity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
