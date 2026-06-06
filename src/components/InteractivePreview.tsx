@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Monitor, Tablet, Smartphone, Sparkles, Send, ChevronLeft, ChevronRight, Menu, HelpCircle, Flame, FileText } from "lucide-react";
-import { MenuItem, DesignTheme } from "../types";
+import { Monitor, Tablet, Smartphone, Sparkles, Send, ChevronLeft, ChevronRight, Menu, HelpCircle, Flame, FileText, CheckCircle2, Info, LayoutTemplate } from "lucide-react";
+import { MenuItem, DesignTheme, SectionContent } from "../types";
 
 interface InteractivePreviewProps {
   menuItems: MenuItem[];
@@ -14,6 +14,8 @@ interface InteractivePreviewProps {
   animationChoices: Record<string, string>;
   seoMap?: Record<string, { title: string; description: string }>;
   finalPrompt?: string;
+  layoutPresetId?: "one_column" | "two_column" | "magazine";
+  sectionContent?: SectionContent;
 }
 
 export default function InteractivePreview({
@@ -27,7 +29,9 @@ export default function InteractivePreview({
   cssFramework,
   animationChoices,
   seoMap = {},
-  finalPrompt = ""
+  finalPrompt = "",
+  layoutPresetId = "one_column",
+  sectionContent
 }: InteractivePreviewProps) {
   // Available screen sizes / breakpoints
   const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
@@ -80,11 +84,11 @@ export default function InteractivePreview({
     }
   }, [activePageId, animationChoices]);
 
-  // Carousel slider data
-  const carouselSlides = [
-    { title: "Innover et Concevoir", text: "Nous façonnons des expériences utilisateur mémorables et ultra fluides." },
-    { title: "Rapidité sans faille", text: "Chaque milli-seconde est optimisée client-side grâce au responsive Antigravity." },
-    { title: "Vision Responsive", text: "S'adapte dynamiquement de l'iPhone Mini jusqu'aux écrans 4K." }
+  // Carousel slider data (customized or default fallbacks)
+  const carouselSlides = sectionContent?.carouselSlides || [
+    { title: "Innover et Concevoir", text: "Nous façonnons des expériences utilisateur mémorables et ultra fluides.", imageFile: "" },
+    { title: "Rapidité sans faille", text: "Chaque milli-seconde est optimisée client-side grâce au responsive Antigravity.", imageFile: "" },
+    { title: "Vision Responsive", text: "S'adapte dynamiquement de l'iPhone Mini jusqu'aux écrans 4K.", imageFile: "" }
   ];
 
   // Client-side PDF-friendly summary sheet extraction
@@ -198,7 +202,7 @@ export default function InteractivePreview({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Recapitulatif Projet - HelpMeToCode</title>
+          <title>Recapitulatif Projet - HelpMeTo Prompt</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
             
@@ -295,7 +299,7 @@ export default function InteractivePreview({
         <body>
           <div class="header-info">
             <div>
-              <div class="logo">HelpMeToCode</div>
+              <div class="logo">HelpMeTo Prompt</div>
               <div style="font-size: 12px; color: #64748b; font-weight: 550; margin-top: 3px;">Rapport récapitulatif de conception de site web</div>
             </div>
             <div class="meta-date">
@@ -329,7 +333,7 @@ export default function InteractivePreview({
           </div>
           
           <div style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-            Fiche éditée avec succès par l'application HelpMeToCode — Tous droits réservés.
+            Fiche éditée avec succès par l'application HelpMeTo Prompt — Tous droits réservés.
           </div>
 
           <script>
@@ -460,9 +464,21 @@ export default function InteractivePreview({
                     className="sticky top-0 z-40 px-5 py-3.5 flex items-center justify-between border-b border-black/5"
                     style={{ backgroundColor: navBgColor, color: textColor }}
                   >
-                    <div className="font-bold font-display text-sm flex items-center gap-1">
-                      <span className="h-5 w-5 rounded bg-indigo-600 text-white flex items-center justify-center text-[10px] font-mono leading-none">C</span>
-                      <span>SiteUX</span>
+                    <div className="font-bold font-display text-sm flex items-center gap-2">
+                      {sectionContent?.headerLogoFile ? (
+                        <img
+                          src={sectionContent.headerLogoFile}
+                          alt="Logo"
+                          className="h-6 w-auto max-w-[100px] object-contain rounded"
+                          onError={(e) => { (e.currentTarget as any).style.display = "none"; }}
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <span className="h-5 w-5 rounded bg-indigo-600 text-white flex items-center justify-center text-[10px] font-mono leading-none">
+                          {sectionContent?.headerLogoText ? sectionContent.headerLogoText.charAt(0) : "S"}
+                        </span>
+                      )}
+                      <span>{sectionContent?.headerLogoText || "SiteUX"}</span>
                     </div>
 
                     {/* Responsive Nav Links for Desktop/Tablet */}
@@ -475,7 +491,7 @@ export default function InteractivePreview({
                             <div key={item.id} className="relative group">
                               <button
                                 onClick={() => setActivePageId(item.id)}
-                                className="flex items-center gap-0.5 hover:opacity-85 pb-1 relative"
+                                className="flex items-center gap-0.5 hover:opacity-85 pb-1 relative cursor-pointer"
                               >
                                 <span style={{ color: isActive ? accentColor : textColor }}>{item.label}</span>
                                 {hasSub && <span className="text-[9px] opacity-70">▾</span>}
@@ -496,7 +512,7 @@ export default function InteractivePreview({
                                     <button
                                       key={sub.id}
                                       onClick={() => setActivePageId(sub.id)}
-                                      className="w-full text-left px-3 py-1.5 hover:bg-gray-100 transition font-medium"
+                                      className="w-full text-left px-3 py-1.5 hover:bg-gray-100 transition font-medium cursor-pointer"
                                     >
                                       {sub.label}
                                     </button>
@@ -511,7 +527,7 @@ export default function InteractivePreview({
                       /* Mobile Hamburger mock icon */
                       <button
                         onClick={() => setShowMobileNav(!showMobileNav)}
-                        className="p-1 rounded border border-gray-300 hover:bg-gray-50/20"
+                        className="p-1 rounded border border-gray-300 hover:bg-gray-50/20 cursor-pointer"
                       >
                         <Menu className="w-4 h-4" />
                       </button>
@@ -556,168 +572,273 @@ export default function InteractivePreview({
                   </div>
                 )}
 
-                {/* 2. MAIN WEBSITE CONTENT SECTION (.SECTION OR <MAIN>) */}
-                <main className="flex-1">
-                  {/* Dynamic page specific segments render based on selections */}
-
-                  {/* HERO Banner */}
-                  {activeSections.includes("hero") && (
-                    <section
-                      className="px-6 py-12 md:py-16 text-center select-none"
-                      style={{ color: textColor }}
+                {/* 2. MAIN WEBSITE BODY (HANDLING TWO_COLUMN GRID STYLE) */}
+                <div className={`flex-1 flex flex-col ${viewport !== "mobile" && layoutPresetId === "two_column" ? "md:grid md:grid-cols-12 md:items-stretch" : ""}`}>
+                  
+                  {/* Two Column Layout Sidebar Widget */}
+                  {viewport !== "mobile" && layoutPresetId === "two_column" && (
+                    <aside
+                      className="md:col-span-3 border-r border-black/5 p-4 space-y-4 text-xs font-semibold select-none flex flex-col justify-between"
+                      style={{ backgroundColor: navBgColor, color: textColor }}
                     >
-                      <h1 className="text-xl md:text-3xl font-extrabold tracking-tight font-display max-w-lg mx-auto">
-                        Concevoir le Web de demain.
-                      </h1>
-                      <p className="text-xs md:text-sm opacity-80 mt-3 max-w-sm mx-auto leading-relaxed">
-                        Un rendu harmonieux de contrastes, d'espacements, de hauteurs de lignes, et de grilles ergonomiques.
-                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-[10px] uppercase font-mono tracking-wider opacity-60 flex items-center gap-1">
+                            <LayoutTemplate className="w-3 h-3 text-indigo-500 animate-pulse" />
+                            Explorateur
+                          </p>
+                          <ul className="mt-2 space-y-1.5">
+                            {menuItems.map((item) => {
+                              const isActive = activePageId === item.id;
+                              return (
+                                <li key={item.id}>
+                                  <button
+                                    onClick={() => setActivePageId(item.id)}
+                                    className="w-full text-left hover:opacity-80 transition text-[11.5px]"
+                                    style={{ color: isActive ? accentColor : textColor }}
+                                  >
+                                    • {item.label}
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                        <div className="pt-2 border-t border-black/5">
+                          <p className="text-[10.5px] font-bold text-indigo-600 tracking-tight flex items-center gap-1 leading-none mb-1">
+                            <Info className="w-3.5 h-3.5" />
+                            Directives SEO
+                          </p>
+                          <p className="text-[9.5px] opacity-75 font-normal leading-normal">
+                            Plan d'agencement à sidebar optimisé pour l'accessibilité écran.
+                          </p>
+                        </div>
+                      </div>
                       
-                      <div className="mt-6">
-                        <button
-                          type="button"
-                          className="text-xs font-bold px-4 py-2.5 rounded-lg text-white shadow-md active:scale-95 transition cursor-pointer"
-                          style={{ backgroundColor: accentColor }}
-                        >
-                          Démarrer maintenant
-                        </button>
+                      <div className="p-2 bg-black/5 border border-black/5 rounded-lg text-[9px] font-mono opacity-80 leading-snug">
+                        SECURE_ANTIGRAVITY_PORTAL
                       </div>
-                    </section>
+                    </aside>
                   )}
 
-                  {/* CAROUSEL Banner */}
-                  {activeSections.includes("carousel") && (
-                    <section className="px-6 py-6" style={{ color: textColor }}>
-                      <div className="bg-black/5 rounded-xl p-6 relative overflow-hidden transition-all flex flex-col justify-between min-h-[160px]">
-                        <div className="flex justify-between items-center text-[10px] font-mono opacity-60">
-                          <span>Carrousel de marque</span>
-                          <span>{carouselIndex + 1} / {carouselSlides.length}</span>
-                        </div>
-                        
-                        <div className="my-auto py-2.5 text-center">
-                          <h4 className="text-sm font-bold font-display">{carouselSlides[carouselIndex].title}</h4>
-                          <p className="text-[11px] opacity-80 mt-1">{carouselSlides[carouselIndex].text}</p>
-                        </div>
-
-                        {/* Navigation controls for Carousel */}
-                        <div className="flex justify-between items-center mt-3">
-                          <button
-                            onClick={() => setCarouselIndex(prev => (prev - 1 + carouselSlides.length) % carouselSlides.length)}
-                            className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                          </button>
+                  {/* Main contents block */}
+                  <main className={`flex-1 flex flex-col ${viewport !== "mobile" && layoutPresetId === "two_column" ? "md:col-span-9" : ""}`}>
+                    
+                    {/* HERO Banner Section */}
+                    {activeSections.includes("hero") && (
+                      <section
+                        className="px-6 py-12 md:py-16 text-center select-none relative overflow-hidden"
+                        style={{ color: textColor }}
+                      >
+                        {sectionContent?.heroImageFile && (
+                          <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
+                            <img src={sectionContent.heroImageFile} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          </div>
+                        )}
+                        <div className="relative z-10">
+                          <h1 className="text-xl md:text-3.5xl font-extrabold tracking-tight font-display max-w-lg mx-auto leading-tight">
+                            {sectionContent?.heroTitle || "Concevoir le Web de demain."}
+                          </h1>
+                          <p className="text-xs md:text-sm opacity-80 mt-3 max-w-sm mx-auto leading-relaxed">
+                            {sectionContent?.heroSubtitle || "Un rendu harmonieux de contrastes, d'espacements, de hauteurs de lignes, et de grilles ergonomiques."}
+                          </p>
                           
-                          <div className="flex gap-1">
-                            {carouselSlides.map((_, i) => (
-                              <span
-                                key={i}
-                                className={`w-1.5 h-1.5 rounded-full transition ${i === carouselIndex ? "opacity-100" : "opacity-30"}`}
-                                style={{ backgroundColor: textColor }}
-                              />
-                            ))}
+                          <div className="mt-6">
+                            <button
+                              type="button"
+                              className="text-xs font-bold px-4 py-2.5 rounded-lg text-white shadow-md active:scale-95 transition cursor-pointer"
+                              style={{ backgroundColor: accentColor }}
+                            >
+                              {sectionContent?.heroCtaText || "Démarrer maintenant"}
+                            </button>
                           </div>
-
-                          <button
-                            onClick={() => setCarouselIndex(prev => (prev + 1) % carouselSlides.length)}
-                            className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition"
-                          >
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
                         </div>
-                      </div>
-                    </section>
-                  )}
+                      </section>
+                    )}
 
-                  {/* CARDS Grid Block */}
-                  {activeSections.includes("cards") && (
-                    <section className="px-6 py-8" style={{ color: textColor }}>
-                      <div className="text-center mb-6">
-                        <span className="text-[10px] uppercase font-mono tracking-widest opacity-60">Nos points forts</span>
-                        <h3 className="text-sm md:text-base font-bold font-display mt-0.5">Valeurs d'accompagnement</h3>
-                      </div>
-
-                      <div className={`grid mt-4 gap-4 ${viewport === "mobile" ? "grid-cols-1" : "grid-cols-3"}`}>
-                        {[1, 2, 3].map((num) => (
-                          <div
-                            key={num}
-                            className="p-4 rounded-xl border border-black/5 bg-black/5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group"
-                          >
-                            <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xs font-bold mb-3" style={{ color: accentColor }}>
-                              0{num}
+                    {/* CAROUSEL Slider Section */}
+                    {activeSections.includes("carousel") && (
+                      <section className="px-6 py-6" style={{ color: textColor }}>
+                        <div className="bg-black/5 rounded-xl p-6 relative overflow-hidden transition-all flex flex-col justify-between min-h-[170px]">
+                          {carouselSlides[carouselIndex]?.imageFile && (
+                            <div className="absolute inset-0 opacity-15 pointer-events-none">
+                              <img src={carouselSlides[carouselIndex].imageFile} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                             </div>
-                            <h4 className="text-xs font-bold font-display">Module innovant {num}</h4>
-                            <p className="text-[10px] opacity-80 mt-1 leading-normal">
-                              Des layouts légers et responsives construits pour un rendu de performance maximal.
-                            </p>
+                          )}
+                          <div className="flex justify-between items-center text-[10px] font-mono opacity-60 z-10">
+                            <span>Carrousel de marque</span>
+                            <span>{carouselIndex + 1} / {carouselSlides.length}</span>
                           </div>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {/* CONTACT Form Block */}
-                  {activeSections.includes("contact") && (
-                    <section className="px-6 py-10" style={{ color: textColor }}>
-                      <div className="max-w-sm mx-auto bg-black/5 rounded-2xl p-5 border border-black/5">
-                        <h3 className="text-xs font-bold uppercase tracking-wider font-display mb-4 text-center">Faire une demande</h3>
-                        
-                        <div className="space-y-3 text-[11px]">
-                          <div>
-                            <label className="block font-medium opacity-85 mb-1">Votre Nom :</label>
-                            <input
-                              type="text"
-                              disabled
-                              placeholder="Jean Dupont"
-                              className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
-                            />
+                          
+                          <div className="my-auto py-2.5 text-center z-10">
+                            <h4 className="text-sm font-bold font-display">{carouselSlides[carouselIndex]?.title}</h4>
+                            <p className="text-[11px] opacity-80 mt-1 max-w-md mx-auto">{carouselSlides[carouselIndex]?.text}</p>
                           </div>
 
-                          <div>
-                            <label className="block font-medium opacity-85 mb-1">Adresse Email :</label>
-                            <input
-                              type="email"
-                              disabled
-                              placeholder="jean@example.com"
-                              className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
-                            />
-                          </div>
+                          {/* Navigation controls for Carousel */}
+                          <div className="flex justify-between items-center mt-3 z-10">
+                            <button
+                              onClick={() => setCarouselIndex(prev => (prev - 1 + carouselSlides.length) % carouselSlides.length)}
+                              className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition cursor-pointer"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            
+                            <div className="flex gap-1">
+                              {carouselSlides.map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`w-1.5 h-1.5 rounded-full transition ${i === carouselIndex ? "opacity-100" : "opacity-30"}`}
+                                  style={{ backgroundColor: textColor }}
+                                />
+                              ))}
+                            </div>
 
-                          <div>
-                            <label className="block font-medium opacity-85 mb-1">Message :</label>
-                            <textarea
-                              rows={2.5}
-                              disabled
-                              placeholder="Décrivez votre projet..."
-                              className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
-                            />
+                            <button
+                              onClick={() => setCarouselIndex(prev => (prev + 1) % carouselSlides.length)}
+                              className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition cursor-pointer"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-
-                          <button
-                            type="button"
-                            className="w-full text-xs font-semibold py-2 rounded-lg text-white font-display flex items-center justify-center gap-1.5 opacity-90 hover:opacity-100 transition cursor-pointer"
-                            style={{ backgroundColor: accentColor }}
-                          >
-                            <Send className="w-3 h-3" />
-                            Transmettre
-                          </button>
                         </div>
-                      </div>
-                    </section>
-                  )}
-                </main>
+                      </section>
+                    )}
+
+                    {/* CARDS Grid Section (BENTOS OR STANDARD GRIDS) */}
+                    {activeSections.includes("cards") && (
+                      <section className="px-6 py-8" style={{ color: textColor }}>
+                        <div className="text-center mb-6">
+                          <span className="text-[10px] uppercase font-mono tracking-widest opacity-60">
+                            {sectionContent?.cardsSubtitle || "Nos points forts"}
+                          </span>
+                          <h3 className="text-sm md:text-base font-bold font-display mt-0.5">
+                            {sectionContent?.cardsTitle || "Valeurs d'accompagnement"}
+                          </h3>
+                        </div>
+
+                        {/* Stagger grid items if layout is MAGAZINE */}
+                        <div className={`grid mt-4 gap-4 ${
+                          viewport === "mobile"
+                            ? "grid-cols-1"
+                            : layoutPresetId === "magazine"
+                            ? "grid-cols-3"
+                            : "grid-cols-3"
+                        }`}>
+                          {(sectionContent?.cardsItems || [
+                            { title: "Module innovant 01", desc: "Des layouts légers et responsives construits pour un rendu de performance maximal.", imageFile: "" },
+                            { title: "Grille sémantique 02", desc: "Structure du dôme sémantique totalement optimisée et codée sans détour.", imageFile: "" },
+                            { title: "Design d'Impact 03", desc: "Contrôle millimétré des hauteurs, marges intérieures, typographies et contrastes parfaits.", imageFile: "" }
+                          ]).map((card, idx) => {
+                            // Bento magazine spanning
+                            const isMagazineGrid = layoutPresetId === "magazine" && viewport !== "mobile";
+                            const gridSpanClass = isMagazineGrid
+                              ? idx === 0
+                                ? "md:col-span-2 md:row-span-1 border-indigo-200 bg-indigo-50/5"
+                                : "md:col-span-1"
+                              : "";
+                            
+                            return (
+                              <div
+                                key={idx}
+                                className={`p-4 rounded-xl border border-black/5 bg-black/5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden group flex flex-col justify-between min-h-[140px] ${gridSpanClass}`}
+                              >
+                                {card.imageFile && (
+                                  <div className="absolute right-2 bottom-2 w-16 h-16 opacity-10 group-hover:opacity-20 transition-all pointer-events-none">
+                                    <img src={card.imageFile} className="w-full h-full object-cover rounded-lg" alt="" referrerPolicy="no-referrer" />
+                                  </div>
+                                )}
+                                <div>
+                                  <div
+                                    className="w-7 h-7 rounded-lg text-indigo-505 flex items-center justify-center text-xs font-bold mb-3"
+                                    style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+                                  >
+                                    0{idx + 1}
+                                  </div>
+                                  <h4 className="text-xs font-bold font-display">{card.title}</h4>
+                                  <p className="text-[10px] opacity-80 mt-1 leading-normal max-w-sm">
+                                    {card.desc}
+                                  </p>
+                                </div>
+                                <span className="text-[9px] font-mono opacity-40 self-end mt-2">Active</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+
+                    {/* CONTACT Form Section */}
+                    {activeSections.includes("contact") && (
+                      <section className="px-6 py-10" style={{ color: textColor }}>
+                        <div className="max-w-sm mx-auto bg-black/5 rounded-2xl p-5 border border-black/5">
+                          <h3 className="text-xs font-bold uppercase tracking-wider font-display mb-4 text-center">
+                            {sectionContent?.contactTitle || "Faire une demande"}
+                          </h3>
+                          
+                          <div className="space-y-3 text-[11px]">
+                            <div>
+                              <label className="block font-medium opacity-85 mb-1">Votre Nom :</label>
+                              <input
+                                type="text"
+                                disabled
+                                placeholder="Jean Dupont"
+                                className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block font-medium opacity-85 mb-1">Adresse Email :</label>
+                              <input
+                                type="email"
+                                disabled
+                                placeholder="jean@example.com"
+                                className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block font-medium opacity-85 mb-1">Message :</label>
+                              <textarea
+                                rows={2.5}
+                                disabled
+                                placeholder="Décrivez votre projet..."
+                                className="w-full bg-white/70 border border-black/10 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 text-xs"
+                              />
+                            </div>
+
+                            <button
+                              type="button"
+                              className="w-full text-xs font-semibold py-2 rounded-lg text-white font-display flex items-center justify-center gap-1.5 opacity-90 hover:opacity-100 transition cursor-pointer"
+                              style={{ backgroundColor: accentColor }}
+                            >
+                              <Send className="w-3 h-3" />
+                              {sectionContent?.contactBtnText || "Transmettre"}
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+                  </main>
+                </div>
 
                 {/* 3. FOOTER SECTION */}
                 {activeSections.includes("footer") && (
                   <footer
-                    className="px-6 py-6 border-t border-black/5 text-center text-[10px]"
+                    className="px-6 py-6 border-t border-black/5 text-center text-[10px] z-10"
                     style={{ backgroundColor: footerBgColor, color: footerBgColor === "#0f172a" || footerBgColor === "#1e1e24" || footerBgColor === "#030712" ? "#f3f4f6" : textColor }}
                   >
                     <div className="max-w-lg mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-                      <span className="opacity-60">© {new Date().getFullYear()} SiteUX Corporation. Tous droits réservés.</span>
+                      <span className="opacity-60">
+                        {sectionContent?.footerCopyright || `© ${new Date().getFullYear()} SiteUX Corporation. Tous droits réservés.`}
+                      </span>
                       <div className="flex gap-3">
-                        <span className="font-semibold underline cursor-pointer" style={{ color: accentColor }}>Confidentialité</span>
-                        <span className="font-semibold underline cursor-pointer" style={{ color: accentColor }}>Contact</span>
+                        <span className="font-semibold underline cursor-pointer" style={{ color: accentColor }}>
+                          {sectionContent?.footerLink1 || "Confidentialité"}
+                        </span>
+                        <span className="font-semibold underline cursor-pointer" style={{ color: accentColor }}>
+                          {sectionContent?.footerLink2 || "Contact"}
+                        </span>
                       </div>
                     </div>
                   </footer>

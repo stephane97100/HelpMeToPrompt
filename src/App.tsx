@@ -15,7 +15,7 @@ import {
   Play
 } from "lucide-react";
 
-import { DesignTheme, FileStatus, PRESET_THEMES } from "./types";
+import { DesignTheme, FileStatus, PRESET_THEMES, SectionContent } from "./types";
 import {
   parseMenuStructure,
   generateInstructionsMarkdown,
@@ -32,8 +32,65 @@ import AnimationPlanner from "./components/AnimationPlanner";
 import PromptDisplay from "./components/PromptDisplay";
 import InteractivePreview from "./components/InteractivePreview";
 import SeoSettings, { SeoMeta } from "./components/SeoSettings";
+import LandingPage from "./components/LandingPage";
+import SavedPromptsManager from "./components/SavedPromptsManager";
+import { Cloud, LogOut, LogIn, Key, UserCheck } from "lucide-react";
 
 export default function App() {
+  // Authentication states
+  const [user, setUser] = useState<{ email: string; name: string; avatarUrl?: string } | null>(() => {
+    const cached = localStorage.getItem("helpmetoprompt_user");
+    return cached ? JSON.parse(cached) : null;
+  });
+
+  const [enableGuestMode, setEnableGuestMode] = useState(() => {
+    const cachedUser = localStorage.getItem("helpmetoprompt_user");
+    return cachedUser ? true : false;
+  });
+
+  const [showEditorAuthScreen, setShowEditorAuthScreen] = useState(false);
+  const [activeEditorProvider, setActiveEditorProvider] = useState<string | null>(null);
+  const [editorSimulatedStep, setEditorSimulatedStep] = useState(0);
+
+  const handleSimulatedLogin = (provider: string, email: string, name: string) => {
+    const newUser = { email, name, avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${name}` };
+    localStorage.setItem("helpmetoprompt_user", JSON.stringify(newUser));
+    setUser(newUser);
+    setEnableGuestMode(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("helpmetoprompt_user");
+    setUser(null);
+    setEnableGuestMode(false);
+  };
+
+  const handleLoadPromptState = (promptData: any) => {
+    if (!promptData) return;
+    if (promptData.siteDesc !== undefined) setSiteDesc(promptData.siteDesc);
+    if (promptData.structureText !== undefined) setStructureText(promptData.structureText);
+    if (promptData.selectedThemeId !== undefined) {
+      setSelectedThemeId(promptData.selectedThemeId);
+      const matching = PRESET_THEMES.find(t => t.id === promptData.selectedThemeId);
+      if (matching) {
+        setThemeName(matching.name);
+        setBgColor(matching.bgColor);
+        setTextColor(matching.textColor);
+        setAccentColor(matching.accentColor);
+        setNavBgColor(matching.navBgColor);
+        setFooterBgColor(matching.footerBgColor);
+        setFontFamily(matching.fontFamily);
+      }
+    }
+    if (promptData.cssFramework !== undefined) setCssFramework(promptData.cssFramework);
+    if (promptData.customCss !== undefined) setCustomCss(promptData.customCss);
+    if (promptData.animationChoices !== undefined) setAnimationChoices(promptData.animationChoices);
+    if (promptData.sectionsMap !== undefined) setSectionsMap(promptData.sectionsMap);
+    if (promptData.seoMap !== undefined) setSeoMap(promptData.seoMap);
+    if (promptData.activeLayoutPresetId !== undefined) setActiveLayoutPresetId(promptData.activeLayoutPresetId);
+    if (promptData.sectionContent !== undefined) setSectionContent(promptData.sectionContent);
+  };
+
   // Global View Navigation Tabs
   const [activeTab, setActiveTab] = useState<"workspace" | "live_preview" | "user_doc">("workspace");
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -100,6 +157,35 @@ export default function App() {
       [pageId]: updated
     }));
   };
+
+  // STEP 7 - Layout and Content overrides
+  const [activeLayoutPresetId, setActiveLayoutPresetId] = useState<"one_column" | "two_column" | "magazine">("one_column");
+
+  const [sectionContent, setSectionContent] = useState<SectionContent>({
+    headerLogoText: "SiteUX",
+    headerLogoFile: "",
+    heroTitle: "Concevoir le Web de demain.",
+    heroSubtitle: "Un rendu harmonieux de contrastes, d'espacements stables, de hauteurs de lignes et d'ergonomie client-side fluide.",
+    heroCtaText: "Démarrer maintenant",
+    heroImageFile: "",
+    carouselSlides: [
+      { title: "Innover et Concevoir", text: "Nous façonnons des expériences utilisateur mémorables et ultra fluides.", imageFile: "" },
+      { title: "Rapidité sans faille", text: "Chaque milli-seconde est optimisée client-side grâce au responsive Antigravity.", imageFile: "" },
+      { title: "Vision Responsive", text: "S'adapte dynamiquement de l'iPhone Mini jusqu'aux Écrans 4K.", imageFile: "" }
+    ],
+    cardsTitle: "Nos points forts d'excellence",
+    cardsSubtitle: "Des prestations calibrées pour la performance",
+    cardsItems: [
+      { title: "Module innovant 01", desc: "Des layouts légers et responsives construits pour un rendu de performance maximal.", imageFile: "" },
+      { title: "Grille sémantique 02", desc: "Structure du dôme sémantique totalement optimisée et codée sans détour.", imageFile: "" },
+      { title: "Design d'Impact 03", desc: "Contrôle millimétré des hauteurs, marges intérieures, typographies et contrastes parfaits.", imageFile: "" }
+    ],
+    contactTitle: "Transmettre une demande de projet",
+    contactBtnText: "Soumettre ma demande",
+    footerCopyright: "© 2026 SiteUX Corporation. Tous droits réservés.",
+    footerLink1: "Mentions Légales",
+    footerLink2: "Politique de Confidentialité"
+  });
 
   // BACKEND - Files state
   const [filesStatus, setFilesStatus] = useState<FileStatus[]>([]);
@@ -218,9 +304,11 @@ export default function App() {
       animationChoices,
       scriptJsContent,
       parsedMenu,
-      seoMap
+      seoMap,
+      activeLayoutPresetId,
+      sectionContent
     );
-  }, [siteDesc, structureText, activeThemeObject, customCss, animationChoices, scriptJsContent, parsedMenu, seoMap]);
+  }, [siteDesc, structureText, activeThemeObject, customCss, animationChoices, scriptJsContent, parsedMenu, seoMap, activeLayoutPresetId, sectionContent]);
 
   const finalPromptContent = useMemo(() => {
     return generateUltimatePrompt(
@@ -232,9 +320,11 @@ export default function App() {
       scriptJsContent,
       parsedMenu,
       cssFramework === "custom_css",
-      seoMap
+      seoMap,
+      activeLayoutPresetId,
+      sectionContent
     );
-  }, [siteDesc, structureText, activeThemeObject, customCss, animationChoices, scriptJsContent, parsedMenu, cssFramework, seoMap]);
+  }, [siteDesc, structureText, activeThemeObject, customCss, animationChoices, scriptJsContent, parsedMenu, cssFramework, seoMap, activeLayoutPresetId, sectionContent]);
 
   // Auto trigger file generation in background when prompt is loaded or explicitly clicked
   const handleGenerateAllProjectFiles = async () => {
@@ -252,6 +342,15 @@ export default function App() {
     }
   };
 
+  if (!user && !enableGuestMode) {
+    return (
+      <LandingPage
+        onEnterGuest={() => setEnableGuestMode(true)}
+        onLoginSimulate={handleSimulatedLogin}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-gray-800 font-sans flex flex-col antialiased">
       {/* APP HEADER */}
@@ -263,7 +362,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-base font-extrabold tracking-tight text-slate-900 font-display flex items-center gap-1.5">
-                HelpMeToCode
+                HelpMeTo Prompt
                 <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                   v2.0
                 </span>
@@ -272,35 +371,78 @@ export default function App() {
             </div>
           </div>
 
-          {/* Nav Tab Controls */}
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
-              onClick={() => setActiveTab("workspace")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                activeTab === "workspace" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              Saisie & Plan de Site
-            </button>
-            <button
-              onClick={() => setActiveTab("live_preview")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                activeTab === "live_preview" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              Prévisualisation Interactive
-            </button>
-            <button
-              onClick={() => setActiveTab("user_doc")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                activeTab === "user_doc" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              README & Aide CHMOD
-            </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Nav Tab Controls */}
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                onClick={() => setActiveTab("workspace")}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                  activeTab === "workspace" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                Saisie & Plan de Site
+              </button>
+              <button
+                onClick={() => setActiveTab("live_preview")}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                  activeTab === "live_preview" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Prévisualisation Interactive
+              </button>
+              <button
+                onClick={() => setActiveTab("user_doc")}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                  activeTab === "user_doc" ? "bg-white text-indigo-700 shadow" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                README & Aide CHMOD
+              </button>
+            </div>
+
+            {/* USER PROFILE STATUS OR GUEST BLOCK */}
+            <div className="flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-slate-200 pt-3 sm:pt-0 sm:pl-4">
+              {user ? (
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src={user.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`}
+                    alt={user.name}
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200"
+                  />
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-800 line-clamp-1 max-w-[110px]">{user.name}</div>
+                    <div className="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                      Espace Cloud
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    title="Se Déconnecter"
+                    className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-650 cursor-pointer transition"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-red-500" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-[9.5px] bg-amber-50 text-amber-700 border border-amber-250 px-2 py-1 rounded-lg font-bold">
+                    Mode Invité
+                  </span>
+                  <button
+                    onClick={() => setShowEditorAuthScreen(true)}
+                    className="px-3 py-1.5 bg-[#0f172a] hover:bg-slate-800 text-white text-xs font-extrabold rounded-lg hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer flex items-center gap-1.5 shadow"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Connexion</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -344,7 +486,8 @@ export default function App() {
                 { step: 3, label: "3. Charte des couleurs", color: "indigo" },
                 { step: 4, label: "4. CSS & Animations", color: "indigo" },
                 { step: 5, label: "5. Sections de page", color: "indigo" },
-                { step: 6, label: "6. Paramètres SEO & Prompt", color: "indigo" }
+                { step: 6, label: "6. Paramètres SEO & Prompt", color: "indigo" },
+                { step: 7, label: "7. Sauvegarde (Espace Cloud)", color: "indigo" }
               ].map((s) => (
                 <button
                   key={s.step}
@@ -517,6 +660,10 @@ export default function App() {
                   <SectionSelector
                     menuItems={parsedMenu}
                     onToggleSection={handleToggleSection}
+                    selectedLayoutId={activeLayoutPresetId}
+                    onSelectLayout={setActiveLayoutPresetId}
+                    sectionContent={sectionContent}
+                    onUpdateContent={(updated) => setSectionContent((prev) => ({ ...prev, ...updated }))}
                   />
 
                   <div className="pt-6 border-t border-gray-100 flex justify-between items-center">
@@ -567,12 +714,64 @@ export default function App() {
                     
                     <button
                       onClick={() => {
+                        setActiveStep(7);
+                      }}
+                      className="inline-flex items-center gap-1 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition cursor-pointer"
+                    >
+                      Étape suivante : Sauvegarde Cloud
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 7: CLOUD STORAGE */}
+              {activeStep === 7 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <Cloud className="w-5 h-5 text-indigo-650 animate-pulse" />
+                    <h2 className="text-lg font-bold text-gray-900 font-display">7. Sauvegarde & Historique Cloud</h2>
+                  </div>
+                  
+                  <p className="text-sm text-gray-650 leading-relaxed font-sans">
+                    Sauvegardez l'ensemble de votre configuration actuelle (Vision, Menu sémantique, Palette, Custom CSS, Animations, Sections de page et SEO) pour pouvoir la restaurer plus tard d'un simple clic.
+                  </p>
+
+                  <SavedPromptsManager
+                    user={user}
+                    onShowConnexion={() => {
+                      setShowEditorAuthScreen(true);
+                    }}
+                    activeState={{
+                      siteDesc,
+                      structureText,
+                      selectedThemeId,
+                      cssFramework,
+                      customCss,
+                      animationChoices,
+                      sectionsMap,
+                      seoMap,
+                      activeLayoutPresetId,
+                      sectionContent
+                    }}
+                    onLoadPrompt={handleLoadPromptState}
+                  />
+
+                  <div className="pt-6 border-t border-gray-100 flex justify-between">
+                    <button
+                      onClick={() => setActiveStep(6)}
+                      className="text-xs font-semibold text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Retour
+                    </button>
+                    
+                    <button
+                      onClick={() => {
                         setActiveTab("live_preview");
                       }}
-                      className="inline-flex items-center gap-1 px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow transition cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-slate-905 hover:bg-slate-805 text-white font-bold text-xs shadow-md transition cursor-pointer"
                     >
-                      <Play className="w-3.5 h-3.5 mr-1" />
-                      Lancer la prévisualisation live
+                      <Play className="w-4 h-4 text-emerald-450 fill-emerald-405 mr-1" />
+                      Visionner le Rendu Interactif
                     </button>
                   </div>
                 </div>
@@ -596,6 +795,8 @@ export default function App() {
               animationChoices={animationChoices}
               seoMap={seoMap}
               finalPrompt={finalPromptContent}
+              layoutPresetId={activeLayoutPresetId}
+              sectionContent={sectionContent}
             />
           </div>
         )}
@@ -609,9 +810,9 @@ export default function App() {
             </div>
 
             <div className="prose prose-slate max-w-none text-sm text-gray-600 leading-relaxed font-sans space-y-4">
-              <h3 className="text-base font-bold text-slate-900 font-display">Objectif de l'application HelpMeToCode</h3>
+              <h3 className="text-base font-bold text-slate-900 font-display">Objectif de l'application HelpMeTo Prompt</h3>
               <p>
-                L'application **HelpMeToCode** permet de structurer au millimètre près l'architecture sémantique et la charte graphique de n'importe quel site internet responsive de manière visuelle et interactive, avant d'en assembler le prompt universel parfait.
+                L'application **HelpMeTo Prompt** permet de structurer au millimètre près l'architecture sémantique et la charte graphique de n'importe quel site internet responsive de manière visuelle et interactive, avant d'en assembler le prompt universel parfait.
               </p>
 
               <h3 className="text-base font-bold text-slate-900 font-display">Étapes d'utilisation pas à pas</h3>
@@ -659,9 +860,88 @@ export default function App() {
       {/* FOOTER */}
       <footer className="bg-white border-t border-slate-100 py-6 mt-12 text-center text-xs text-slate-400 select-none">
         <div className="max-w-7xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} HelpMeToCode — Conçu pour l'assemblage UX d'Antigravity.</p>
+          <p>© {new Date().getFullYear()} HelpMeTo Prompt — Conçu pour l'assemblage UX d'Antigravity.</p>
         </div>
       </footer>
+
+      {/* LOCAL LOGIN MODAL FROM EDITOR WORKSPACE */}
+      {showEditorAuthScreen && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-[#141f36] border border-slate-800 rounded-3xl max-w-sm w-full p-6 sm:p-7 space-y-5 relative shadow-2xl">
+            <button
+              onClick={() => { if (!activeEditorProvider) setShowEditorAuthScreen(false); }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white font-bold cursor-pointer transition text-base disabled:opacity-30"
+              disabled={activeEditorProvider !== null}
+            >
+              ✕
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="mx-auto h-11 w-11 bg-gradient-to-tr from-indigo-500 to-emerald-500 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-md">
+                H
+              </div>
+              <h3 className="text-base font-black text-white">Espace de Connexion</h3>
+              <p className="text-xs text-slate-400">
+                Associez vos configurations de prompts à votre propre profil cloud sécurisé pour sauvegarder et échanger vos modèles.
+              </p>
+            </div>
+
+            {activeEditorProvider ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="relative inline-flex items-center justify-center">
+                  <div className="w-10 h-10 border-3 border-indigo-505 border-t-indigo-500 rounded-full animate-spin" />
+                  <div className="absolute text-[10px] font-extrabold text-indigo-400 animate-pulse font-mono">
+                    {editorSimulatedStep * 33}%
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-slate-200">
+                    Négociation avec <span className="text-indigo-400">{activeEditorProvider}</span>...
+                  </p>
+                  <p className="text-[9.5px] text-slate-400 font-mono">
+                    {editorSimulatedStep === 1 && "➜ Initialisation de la session de confiance..."}
+                    {editorSimulatedStep === 2 && "➜ Synchronisation du profil et clés d'écriture..."}
+                    {editorSimulatedStep === 3 && "➜ Session sémantique cloud active !"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {[
+                  { id: "google", name: "Google", email: "alex.mercer@gmail.com", user: "Alex Mercer" },
+                  { id: "microsoft", name: "Microsoft", email: "s.connors@outlook.com", user: "Sarah Connors" },
+                  { id: "apple", name: "Apple", email: "j.dupont@icloud.com", user: "Jean Dupont" },
+                  { id: "facebook", name: "Facebook", email: "zuck@fb.com", user: "Marc Zuckerberg" },
+                  { id: "linkedin", name: "LinkedIn", email: "elena.rostova@linkedin.com", user: "Elena Rostova" }
+                ].map((prov) => (
+                  <button
+                    key={prov.id}
+                    onClick={() => {
+                      setActiveEditorProvider(prov.name);
+                      setEditorSimulatedStep(1);
+                      setTimeout(() => {
+                        setEditorSimulatedStep(2);
+                        setTimeout(() => {
+                          setEditorSimulatedStep(3);
+                          setTimeout(() => {
+                            handleSimulatedLogin(prov.id, prov.email, prov.user);
+                            setShowEditorAuthScreen(false);
+                            setActiveEditorProvider(null);
+                            setEditorSimulatedStep(0);
+                          }, 1100);
+                        }, 900);
+                      }, 750);
+                    }}
+                    className="w-full py-2.5 px-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-xs font-bold text-slate-100 rounded-xl transition cursor-pointer text-center"
+                  >
+                    Se connecter avec {prov.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

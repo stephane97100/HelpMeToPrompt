@@ -133,7 +133,7 @@ export default function PermissionBanner({
             chmod 777 instructions.md style.css script.js
           </p>
           <p className="text-slate-400 mt-2 text-[11px] italic leading-normal">
-            Note: L'application HelpMeToCode applique d'office un chmod 644 de façon automatisée en arrière-plan à chaque requête d'enregistrement réussie.
+            Note: L'application HelpMeTo Prompt applique d'office un chmod 644 de façon automatisée en arrière-plan à chaque requête d'enregistrement réussie.
           </p>
         </div>
       )}

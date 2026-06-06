@@ -20,6 +20,64 @@ export interface DesignTheme {
   cssFramework: "tailwind" | "bootstrap" | "advantix" | "custom_css";
 }
 
+export interface LayoutPreset {
+  id: "one_column" | "two_column" | "magazine";
+  name: string;
+  description: string;
+  structure: string;
+  advantages: string;
+}
+
+export const PRESET_LAYOUTS: LayoutPreset[] = [
+  {
+    id: "one_column",
+    name: "Une Colonne (Épuré & Linéaire)",
+    description: "Un flux vertical harmonieux centré, parfait pour lire de haut en bas sans distraction visuelle.",
+    structure: "En-tête -> sections empilées de largeur maximale contrôlée (Centered Stack) -> Pied de page.",
+    advantages: "Excellente clarté, simplicité absolue sur mobile, temps de chargement ultra-rapide et impact fort sur le message."
+  },
+  {
+    id: "two_column",
+    name: "Deux Colonnes (Modulaire & Sidebar)",
+    description: "Une colonne latérale fixe ou flottante (Sidebar) pour la navigation ou les rappels, à côté du contenu principal.",
+    structure: "En-tête -> (Menu de navigation latérale / Widget SEO + Flux de contenu adjacent) -> Pied de page.",
+    advantages: "Navigation ultra-rapide, idéal pour documentations techniques, blogs d'information, espaces d'administration ou wikis."
+  },
+  {
+    id: "magazine",
+    name: "Magazine Bento Grid (Visuel & Créatif)",
+    description: "Une grille asymétrique ordonnée intégrant des cartes de dimensions variables pour un rendu riche et rythmé.",
+    structure: "En-tête -> Grille interactive Bento asymétrique (Cards s'étalant sur 2 ou 3 colonnes) -> Pied de page.",
+    advantages: "Excellente mise en avant médiatique (portfolio, e-commerce), esthétique moderne mémorable et distribution de contenus denses."
+  }
+];
+
+export interface SectionContent {
+  headerLogoText: string;
+  headerLogoFile: string; // Base64 or object URL
+  heroTitle: string;
+  heroSubtitle: string;
+  heroCtaText: string;
+  heroImageFile: string; // Base64 or object URL
+  carouselSlides: Array<{
+    title: string;
+    text: string;
+    imageFile: string;
+  }>;
+  cardsTitle: string;
+  cardsSubtitle: string;
+  cardsItems: Array<{
+    title: string;
+    desc: string;
+    imageFile: string;
+  }>;
+  contactTitle: string;
+  contactBtnText: string;
+  footerCopyright: string;
+  footerLink1: string;
+  footerLink2: string;
+}
+
 export const PRESET_THEMES: DesignTheme[] = [
   {
     id: "minimaliste",

@@ -1,12 +1,12 @@
-# HelpMeToCode (AideMoiÀCoder) 🚀
+# HelpMeTo Prompt (AideMoiÀConfigurer) 🚀
 
-**HelpMeToCode** est un assistant interactif conçu spécifiquement pour structurer, chartrer et de concevoir des sites web responsives haut de gamme, sans avoir besoin d'une base de données complexe. Il compile l'ensemble de vos choix fonctionnels et visuels pour générer le **prompt et cahier des charges de développement parfait pour l'assistant Antigravity**.
+**HelpMeTo Prompt** est un assistant interactif conçu spécifiquement pour structurer, chartrer et de concevoir des sites web responsives haut de gamme, sans avoir besoin d'une base de données complexe. Il compile l'ensemble de vos choix fonctionnels et visuels pour générer le **prompt et cahier des charges de développement parfait pour l'assistant Antigravity**.
 
 ---
 
 ## 🎯 Objectif de l'application
 
-HelpMeToCode résout le problème de l'imprécision des prompts de design. Plutôt que de demander à l'IA de générer un site "au hasard", l'application vous accompagne pas à pas pour configurer :
+HelpMeTo Prompt résout le problème de l'imprécision des prompts de design. Plutôt que de demander à l'IA de générer un site "au hasard", l'application vous accompagne pas à pas pour configurer :
 1. **Une vision cible** rédigée de manière humaine.
 2. **Une arborescence de menu** imbriquée et structurée en cascade.
 3. **Une charte de couleurs** contrastée et équilibrée via des thèmes intégrés.
@@ -60,7 +60,7 @@ En bas, copiez le **Prompt Ultime** qui débute exactement par la formule :
 Pour que le serveur d'arrière-plan de l'application puisse créer ou écraser les fichiers `instructions.md`, `style.css` et `script.js` dans le conteneur sandboxed d'Antigravity, les droits de lecture et d'écriture du système doivent être accordés.
 
 ### Comment vérifier les droits depuis l'Application ?
-L'en-tête de HelpMeToCode intègre un module de diagnostic automatique :
+L'en-tête de HelpMeTo Prompt intègre un module de diagnostic automatique :
 *   🟢 **Badge Vert (Actif / R et W) :** Le fichier existe et est entièrement accessible en lecture et en écriture. Tout fonctionne !
 *   🔴 **Badge Rouge (Requis / N/A) :** Le fichier a des restrictions d'autorisation ou n'a pas pu être écrit.
 
@@ -82,7 +82,7 @@ chmod 777 instructions.md style.css script.js
 
 ## 🖥️ Technologie & Mode Développement
 
-L'application HelpMeToCode est construite en architecture moderne full-stack :
+L'application HelpMeTo Prompt est construite en architecture moderne full-stack :
 *   **Frontend :** React 19, TypeScript, Tailwind CSS, Lucide-React.
 *   **Backend :** Node.js, Express, middleware de service de développement Vite.
 *   **Raccords d'écriture :** API REST sécurisée sur `/api/save-file` et `/api/file-status` pour écrire sur le disque du conteneur en direct.

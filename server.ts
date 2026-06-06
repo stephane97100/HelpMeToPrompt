@@ -59,6 +59,76 @@ app.post("/api/save-file", (req, res) => {
   }
 });
 
+// SAVED PROMPTS DATABASE IN WORKSPACE (SERVER-SIDE PERSISTENCE)
+const PROMPTS_FILE = path.join(process.cwd(), "saved_prompts.json");
+
+function readSavedPrompts() {
+  try {
+    if (!fs.existsSync(PROMPTS_FILE)) {
+      return [];
+    }
+    const data = fs.readFileSync(PROMPTS_FILE, "utf8");
+    return JSON.parse(data) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeSavedPrompts(prompts: any[]) {
+  try {
+    fs.writeFileSync(PROMPTS_FILE, JSON.stringify(prompts, null, 2), "utf8");
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Retrieve prompts list
+app.get("/api/prompts", (req, res) => {
+  try {
+    const prompts = readSavedPrompts();
+    res.json({ success: true, prompts });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create/Update prompt
+app.post("/api/prompts", (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt || !prompt.id || !prompt.email) {
+      return res.status(400).json({ error: "Champs requis manquants." });
+    }
+    const prompts = readSavedPrompts();
+    const index = prompts.findIndex((p: any) => p.id === prompt.id);
+    if (index >= 0) {
+      // Overwrite existing
+      prompts[index] = { ...prompts[index], ...prompt, updatedAt: new Date().toISOString() };
+    } else {
+      // Add new
+      prompts.push({ ...prompt, createdAt: new Date().toISOString() });
+    }
+    writeSavedPrompts(prompts);
+    res.json({ success: true, prompt });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete prompt
+app.delete("/api/prompts/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const prompts = readSavedPrompts();
+    const filtered = prompts.filter((p: any) => p.id !== id);
+    writeSavedPrompts(filtered);
+    res.json({ success: true, message: "Prompt supprimé" });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Endpoint to check status and read files
 app.get("/api/file-status", (req, res) => {
   try {
